@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: medigrid-ai-service
+    runtime: python
+    rootDir: ai-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+
+  - type: web
+    name: medigrid-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: AI_SERVICE_URL
+        sync: false
+      - key: EXPIRY_THRESHOLD_DAYS
+        value: "30"
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false

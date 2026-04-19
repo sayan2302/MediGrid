@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: medigrid-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medigrid-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongo
+      - ai-service
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: medigrid-ai
+    restart: unless-stopped
+    env_file:
+      - ./ai-service/.env
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: http://localhost:4000/api
+    container_name: medigrid-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
