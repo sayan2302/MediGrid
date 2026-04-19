@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { FiCpu, FiTrendingUp } from 'react-icons/fi';
 import api from '../api/client';
 import { useAppData } from '../context/AppContext';
+import EmptyState from '../components/EmptyState';
 
 export default function AIInsightsPage() {
   const { items } = useAppData();
@@ -15,31 +17,31 @@ export default function AIInsightsPage() {
   const [expiryResult, setExpiryResult] = useState(null);
   const [error, setError] = useState('');
 
-  const getForecast = async (e) => {
-    e.preventDefault();
+  const getForecast = async (event) => {
+    event.preventDefault();
     try {
       setError('');
-      const res = await api.post('/ai/forecast-demand', {
+      const response = await api.post('/ai/forecast-demand', {
         itemId: forecastInput.itemId,
         horizonDays: Number(forecastInput.horizonDays)
       });
-      setForecastResult(res.data);
+      setForecastResult(response.data);
     } catch (err) {
       setError(err?.response?.data?.message || err.message);
     }
   };
 
-  const getExpiryRisk = async (e) => {
-    e.preventDefault();
+  const getExpiryRisk = async (event) => {
+    event.preventDefault();
     try {
       setError('');
-      const res = await api.post('/ai/expiry-risk', {
+      const response = await api.post('/ai/expiry-risk', {
         ...expiryInput,
         currentStock: Number(expiryInput.currentStock),
         dailyUsageRate: Number(expiryInput.dailyUsageRate),
         daysToExpiry: Number(expiryInput.daysToExpiry)
       });
-      setExpiryResult(res.data);
+      setExpiryResult(response.data);
     } catch (err) {
       setError(err?.response?.data?.message || err.message);
     }
@@ -47,48 +49,66 @@ export default function AIInsightsPage() {
 
   return (
     <div className="page-grid two-col">
-      <section className="form-card">
-        <h3>Demand Forecast</h3>
-        <form className="form-grid" onSubmit={getForecast}>
-          <label>
-            Item
-            <select
-              value={forecastInput.itemId}
-              onChange={(e) => setForecastInput({ ...forecastInput, itemId: e.target.value })}
-              required
-            >
-              <option value="">Select item</option>
-              {items.map((item) => (
-                <option key={item._id} value={item._id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Horizon Days
-            <input
-              type="number"
-              min="1"
-              value={forecastInput.horizonDays}
-              onChange={(e) => setForecastInput({ ...forecastInput, horizonDays: e.target.value })}
-            />
-          </label>
-          <button type="submit">Generate Forecast</button>
-        </form>
-        {forecastResult ? (
-          <pre className="result-box">{JSON.stringify(forecastResult, null, 2)}</pre>
-        ) : null}
+      <section className="form-card pin-card">
+        <header className="section-head">
+          <h3>Demand Forecast</h3>
+          <p>Prompt-based estimate for future consumption over a custom horizon.</p>
+        </header>
+
+        {items.length === 0 ? (
+          <EmptyState
+            icon={<FiTrendingUp />}
+            title="No item data for forecasting"
+            description="Add inventory items or load demo data first, then return to generate forecasts."
+          />
+        ) : (
+          <form className="form-grid" onSubmit={getForecast}>
+            <label>
+              Item
+              <select
+                value={forecastInput.itemId}
+                onChange={(event) => setForecastInput({ ...forecastInput, itemId: event.target.value })}
+                required
+              >
+                <option value="">Select item</option>
+                {items.map((item) => (
+                  <option key={item._id} value={item._id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Horizon Days
+              <input
+                type="number"
+                min="1"
+                value={forecastInput.horizonDays}
+                onChange={(event) => setForecastInput({ ...forecastInput, horizonDays: event.target.value })}
+              />
+            </label>
+            <button type="submit">
+              <FiTrendingUp />
+              Generate Forecast
+            </button>
+          </form>
+        )}
+
+        {forecastResult ? <pre className="result-box">{JSON.stringify(forecastResult, null, 2)}</pre> : null}
       </section>
 
-      <section className="form-card">
-        <h3>Expiry Risk Evaluation</h3>
+      <section className="form-card pin-card">
+        <header className="section-head">
+          <h3>Expiry Risk Evaluation</h3>
+          <p>Estimate whether current stock is likely to expire before use.</p>
+        </header>
+
         <form className="form-grid" onSubmit={getExpiryRisk}>
           <label>
             Item Name
             <input
               value={expiryInput.itemName}
-              onChange={(e) => setExpiryInput({ ...expiryInput, itemName: e.target.value })}
+              onChange={(event) => setExpiryInput({ ...expiryInput, itemName: event.target.value })}
               required
             />
           </label>
@@ -98,7 +118,7 @@ export default function AIInsightsPage() {
               type="number"
               min="0"
               value={expiryInput.currentStock}
-              onChange={(e) => setExpiryInput({ ...expiryInput, currentStock: e.target.value })}
+              onChange={(event) => setExpiryInput({ ...expiryInput, currentStock: event.target.value })}
             />
           </label>
           <label>
@@ -108,7 +128,7 @@ export default function AIInsightsPage() {
               min="0"
               step="0.1"
               value={expiryInput.dailyUsageRate}
-              onChange={(e) => setExpiryInput({ ...expiryInput, dailyUsageRate: e.target.value })}
+              onChange={(event) => setExpiryInput({ ...expiryInput, dailyUsageRate: event.target.value })}
             />
           </label>
           <label>
@@ -117,11 +137,15 @@ export default function AIInsightsPage() {
               type="number"
               min="1"
               value={expiryInput.daysToExpiry}
-              onChange={(e) => setExpiryInput({ ...expiryInput, daysToExpiry: e.target.value })}
+              onChange={(event) => setExpiryInput({ ...expiryInput, daysToExpiry: event.target.value })}
             />
           </label>
-          <button type="submit">Assess Risk</button>
+          <button type="submit">
+            <FiCpu />
+            Assess Risk
+          </button>
         </form>
+
         {expiryResult ? <pre className="result-box">{JSON.stringify(expiryResult, null, 2)}</pre> : null}
       </section>
 

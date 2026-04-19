@@ -7,6 +7,7 @@ const alerts = require('./alerts');
 const dashboard = require('./dashboard');
 const ai = require('./ai');
 const usage = require('./usage');
+const setup = require('./setup');
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use('/alerts', alerts);
 router.use('/dashboard', dashboard);
 router.use('/ai', ai);
 router.use('/usage', usage);
+router.use('/setup', setup);
 
 module.exports = router;

@@ -1,5 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut
+} from 'firebase/auth';
 import { auth } from '../firebase';
 
 const AuthContext = createContext(null);
@@ -31,6 +37,16 @@ export const AuthProvider = ({ children }) => {
     return result.user;
   };
 
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await signInWithPopup(auth, provider);
+    const token = await result.user.getIdToken();
+    localStorage.setItem('medigrid-token', token);
+    setUser(result.user);
+    return result.user;
+  };
+
   const logout = async () => {
     await signOut(auth);
     localStorage.removeItem('medigrid-token');
@@ -38,7 +54,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const value = useMemo(
-    () => ({ user, loading, login, logout, isAuthenticated: Boolean(user) }),
+    () => ({ user, loading, login, loginWithGoogle, logout, isAuthenticated: Boolean(user) }),
     [user, loading]
   );
 
