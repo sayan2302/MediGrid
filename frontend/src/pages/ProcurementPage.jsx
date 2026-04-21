@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Box, Button, MenuItem, Stack, TextField } from '@mui/material';
 import { FiClipboard, FiPlusCircle, FiShoppingCart } from 'react-icons/fi';
 import api from '../api/client';
 import { useAppData } from '../context/AppContext';
@@ -10,7 +11,14 @@ const emptyLine = {
   quantity: 1,
   unitPrice: 0,
   batchCode: '',
-  expiryDate: ''
+  expiryDate: new Date().toISOString().slice(0, 10)
+};
+
+const statusSteps = ['Draft', 'Submitted', 'Approved', 'Received'];
+
+const getStatusIndex = (status) => {
+  const index = statusSteps.indexOf(status);
+  return index === -1 ? 0 : index;
 };
 
 export default function ProcurementPage() {
@@ -87,78 +95,86 @@ export default function ProcurementPage() {
             description="Add at least one item and one vendor to start procurement workflows."
           />
         ) : (
-          <form onSubmit={createPo} className="form-grid">
-            <label>
-              PO Number
-              <input
-                value={poForm.poNumber}
-                onChange={(event) => setPoForm({ ...poForm, poNumber: event.target.value })}
-              />
-            </label>
-            <label>
-              Vendor
-              <select
-                value={poForm.vendorId}
-                onChange={(event) => setPoForm({ ...poForm, vendorId: event.target.value })}
-              >
-                <option value="">Select vendor</option>
-                {vendors.map((vendor) => (
-                  <option key={vendor._id} value={vendor._id}>
-                    {vendor.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Remarks
-              <input
-                value={poForm.remarks}
-                onChange={(event) => setPoForm({ ...poForm, remarks: event.target.value })}
-              />
-            </label>
+          <Stack component="form" onSubmit={createPo} spacing={1.6}>
+            <TextField
+              label="PO Number"
+              value={poForm.poNumber}
+              onChange={(event) => setPoForm({ ...poForm, poNumber: event.target.value })}
+            />
+            <TextField
+              select
+              label="Vendor"
+              value={poForm.vendorId}
+              onChange={(event) => setPoForm({ ...poForm, vendorId: event.target.value })}
+            >
+              <MenuItem value="">Select vendor</MenuItem>
+              {vendors.map((vendor) => (
+                <MenuItem key={vendor._id} value={vendor._id}>
+                  {vendor.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Remarks"
+              value={poForm.remarks}
+              onChange={(event) => setPoForm({ ...poForm, remarks: event.target.value })}
+            />
 
             {poForm.lines.map((line, index) => (
-              <div className="line-row" key={`line-${index}`}>
-                <select value={line.itemId} onChange={(event) => updateLine(index, { itemId: event.target.value })}>
-                  <option value="">Item</option>
+              <Box
+                key={`line-${index}`}
+                className="po-line-grid"
+                sx={{
+                  display: 'grid',
+                  gap: 1.3,
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', xl: '1.4fr 0.7fr 1fr 1fr' }
+                }}
+              >
+                <TextField
+                  select
+                  label="Item"
+                  value={line.itemId}
+                  onChange={(event) => updateLine(index, { itemId: event.target.value })}
+                >
+                  <MenuItem value="">Item</MenuItem>
                   {items.map((item) => (
-                    <option key={item._id} value={item._id}>
+                    <MenuItem key={item._id} value={item._id}>
                       {item.name}
-                    </option>
+                    </MenuItem>
                   ))}
-                </select>
-                <input
+                </TextField>
+                <TextField
                   type="number"
-                  min="1"
-                  placeholder="Qty"
+                  label="Qty"
+                  inputProps={{ min: 1 }}
                   value={line.quantity}
                   onChange={(event) => updateLine(index, { quantity: event.target.value })}
                 />
-                <input
-                  type="text"
-                  placeholder="Batch"
+                <TextField
+                  label="Batch"
                   value={line.batchCode}
                   onChange={(event) => updateLine(index, { batchCode: event.target.value })}
                 />
-                <input
+                <TextField
                   type="date"
+                  label="Expiry"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ min: new Date().toISOString().slice(0, 10) }}
                   value={line.expiryDate}
                   onChange={(event) => updateLine(index, { expiryDate: event.target.value })}
                 />
-              </div>
+              </Box>
             ))}
 
             <div className="row-actions">
-              <button type="button" className="button-secondary" onClick={addLine}>
-                <FiPlusCircle />
+              <Button type="button" variant="outlined" onClick={addLine} startIcon={<FiPlusCircle />}>
                 Add Line
-              </button>
-              <button type="submit" disabled={!canCreate}>
-                <FiShoppingCart />
+              </Button>
+              <Button type="submit" disabled={!canCreate} startIcon={<FiShoppingCart />}>
                 Create PO
-              </button>
+              </Button>
             </div>
-          </form>
+          </Stack>
         )}
       </section>
 
@@ -170,33 +186,43 @@ export default function ProcurementPage() {
             description="Create your first PO to trigger approvals and stock intake workflow."
           />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>PO</th>
-                <th>Vendor</th>
-                <th>Status</th>
-                <th>Lines</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchaseOrders.map((po) => (
-                <tr key={po._id}>
-                  <td>{po.poNumber}</td>
-                  <td>{po.vendorId?.name || '--'}</td>
-                  <td>{po.status}</td>
-                  <td>{po.lines.length}</td>
-                  <td className="compact-actions">
+          <div className="po-board">
+            {purchaseOrders.map((po) => {
+              const stepIndex = getStatusIndex(po.status);
+
+              return (
+                <article key={po._id} className={`po-card status-${po.status.toLowerCase()}`}>
+                  <div className="po-head">
+                    <div>
+                      <p className="po-id">{po.poNumber}</p>
+                      <h4>{po.vendorId?.name || 'Unknown vendor'}</h4>
+                    </div>
+                    <span className={`pill po-pill ${po.status.toLowerCase()}`}>{po.status}</span>
+                  </div>
+
+                  <div className="po-meta">
+                    <span className="stat-chip">Lines: {po.lines.length}</span>
+                    {po.remarks ? <span className="stat-chip">{po.remarks}</span> : null}
+                  </div>
+
+                  <div className="po-progress">
+                    {statusSteps.map((step, index) => (
+                      <span key={`${po._id}-${step}`} className={`po-step ${index <= stepIndex ? 'active' : ''}`}>
+                        {step}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="compact-actions">
                     {po.status === 'Draft' ? <button onClick={() => transition(po._id, 'submit')}>Submit</button> : null}
                     {po.status === 'Submitted' ? <button onClick={() => transition(po._id, 'approve')}>Approve</button> : null}
                     {po.status === 'Submitted' ? <button onClick={() => transition(po._id, 'reject')}>Reject</button> : null}
                     {po.status === 'Approved' ? <button onClick={() => transition(po._id, 'receive')}>Receive</button> : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         )}
       </TableCard>
     </div>

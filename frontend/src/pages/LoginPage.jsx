@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button, InputAdornment, Stack, TextField } from '@mui/material';
 import { Navigate, useLocation } from 'react-router-dom';
 import { FiLock, FiMail } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
@@ -42,54 +43,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-canvas">
-      <section className="login-hero pin-card">
-        <p className="kicker">MediGrid Authentication</p>
-        <h1>Sign in to run inventory and procurement workflows.</h1>
-        <p>Use Firebase Google sign in or your email/password account to continue.</p>
-      </section>
+    <section className="form-card login-card pin-card">
+      <header className="section-head">
+        <p>Continue where your operations left off.</p>
+      </header>
 
-      <section className="form-card login-card pin-card">
-        <header className="section-head">
-          <h3>Welcome back</h3>
-          <p>Continue where your operations left off.</p>
-        </header>
+      <Button
+        type="button"
+        className="google-btn"
+        variant="outlined"
+        onClick={onGoogleSignIn}
+        disabled={loading}
+        startIcon={<FcGoogle />}
+      >
+        {loading ? 'Please wait...' : 'Continue with Google'}
+      </Button>
 
-        <button type="button" className="google-btn" onClick={onGoogleSignIn} disabled={loading}>
-          <FcGoogle />
-          {loading ? 'Please wait...' : 'Continue with Google'}
-        </button>
+      <p className="auth-separator">or use email and password</p>
 
-        <p className="auth-separator">or use email and password</p>
+      <Stack component="form" spacing={1.2} onSubmit={onSubmit}>
+        <TextField
+          type="email"
+          label="Email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <FiMail />
+              </InputAdornment>
+            )
+          }}
+        />
+        <TextField
+          type="password"
+          label="Password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+          inputProps={{ minLength: 6 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <FiLock />
+              </InputAdornment>
+            )
+          }}
+        />
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </Button>
+      </Stack>
 
-        <form className="form-grid" onSubmit={onSubmit}>
-          <label>
-            Email
-            <div className="icon-input">
-              <FiMail />
-              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-            </div>
-          </label>
-          <label>
-            Password
-            <div className="icon-input">
-              <FiLock />
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-          </label>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        {error ? <p className="error-banner">{error}</p> : null}
-      </section>
-    </div>
+      {error ? <p className="error-banner">{error}</p> : null}
+    </section>
   );
 }
