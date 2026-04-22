@@ -45,7 +45,7 @@ export default function LoginPage() {
   return (
     <section className="form-card login-card pin-card">
       <header className="section-head">
-        <p>Continue where your operations left off.</p>
+        <h2>Login</h2>
       </header>
 
       <Button
