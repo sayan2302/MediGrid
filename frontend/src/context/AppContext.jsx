@@ -10,6 +10,7 @@ export const AppProvider = ({ children }) => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [items, setItems] = useState([]);
   const [vendors, setVendors] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,13 +18,14 @@ export const AppProvider = ({ children }) => {
     setLoading(true);
     setError('');
     try {
-      const [overviewRes, inventoryRes, alertRes, poRes, itemsRes, vendorsRes] = await Promise.all([
+      const [overviewRes, inventoryRes, alertRes, poRes, itemsRes, vendorsRes, batchesRes] = await Promise.all([
         api.get('/dashboard/overview'),
         api.get('/inventory/summary'),
         api.get('/alerts'),
         api.get('/purchase-orders'),
         api.get('/items'),
-        api.get('/vendors')
+        api.get('/vendors'),
+        api.get('/inventory/batches')
       ]);
       setOverview(overviewRes.data);
       setInventorySummary(inventoryRes.data);
@@ -31,6 +33,7 @@ export const AppProvider = ({ children }) => {
       setPurchaseOrders(poRes.data);
       setItems(itemsRes.data);
       setVendors(vendorsRes.data);
+      setBatches(batchesRes.data);
     } catch (err) {
       setError(err?.response?.data?.message || err.message || 'Failed to load data');
     } finally {
@@ -50,12 +53,13 @@ export const AppProvider = ({ children }) => {
       purchaseOrders,
       items,
       vendors,
+      batches,
       loading,
       error,
       fetchAll,
       setError
     }),
-    [overview, inventorySummary, alerts, purchaseOrders, items, vendors, loading, error]
+    [overview, inventorySummary, alerts, purchaseOrders, items, vendors, batches, loading, error]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

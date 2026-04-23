@@ -2,6 +2,7 @@ const app = require('./app');
 const env = require('./config/env');
 const { connectDb } = require('./config/db');
 const { initFirebase } = require('./config/firebase');
+const { initCronJobs } = require('./scripts/cronJobs');
 
 const RETRY_MS = 8000;
 
@@ -14,6 +15,7 @@ const connectDbWithRetry = async () => {
     try {
       await connectDb(env.mongoUri);
       console.log('MongoDB connected');
+      initCronJobs(); // Initialize cron jobs after DB connection
       return;
     } catch (error) {
       console.error('MongoDB connection failed. Retrying soon.');

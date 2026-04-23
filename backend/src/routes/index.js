@@ -8,6 +8,7 @@ const dashboard = require('./dashboard');
 const ai = require('./ai');
 const usage = require('./usage');
 const setup = require('./setup');
+const kpi = require('./kpi');
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use('/dashboard', dashboard);
 router.use('/ai', ai);
 router.use('/usage', usage);
 router.use('/setup', setup);
+router.use('/kpi', kpi);
 
 module.exports = router;

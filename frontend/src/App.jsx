@@ -16,6 +16,11 @@ import { PreferencesProvider } from './context/PreferencesContext';
 import GlobalFeedback from './components/GlobalFeedback';
 
 const muiTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#e60023'
+    }
+  },
   shape: {
     borderRadius: 16
   },

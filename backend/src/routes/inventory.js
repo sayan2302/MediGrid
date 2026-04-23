@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const InventoryBatch = require('../models/InventoryBatch');
 const Item = require('../models/Item');
+const InventoryTransaction = require('../models/InventoryTransaction');
 const { recomputeAlerts } = require('../services/alertService');
 
 const router = express.Router();
@@ -23,6 +24,15 @@ router.post('/batches', async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid itemId' });
     }
     const batch = await InventoryBatch.create(payload);
+
+    await InventoryTransaction.create({
+      itemId: payload.itemId,
+      type: 'IN',
+      quantity: payload.quantity,
+      reference: batch._id.toString(),
+      date: payload.receivedDate || new Date()
+    });
+
     await recomputeAlerts();
     return res.status(201).json(batch);
   } catch (error) {

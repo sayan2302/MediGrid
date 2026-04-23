@@ -4,6 +4,7 @@ import api from '../api/client';
 import { useAppData } from '../context/AppContext';
 import TableCard from '../components/TableCard';
 import EmptyState from '../components/EmptyState';
+import PageBanner from '../components/PageBanner';
 
 const formatAlertType = (type) =>
   type
@@ -51,21 +52,24 @@ export default function AlertsPage() {
 
   return (
     <div className="page-grid">
-      <section className="pin-card form-card">
-        <header className="section-head">
-          <h3>Alert Controls</h3>
-          <p>Recompute alerts from live stock and expiry rules whenever needed.</p>
-        </header>
-        <div className="row-actions">
-          <button type="button" onClick={recomputeAlerts} disabled={loading}>
-            <FiRefreshCw />
-            {loading ? 'Refreshing...' : 'Refresh / Generate Alerts'}
-          </button>
-          <span className="stat-chip">Total: {stats.total}</span>
-          <span className="stat-chip">Unresolved: {stats.unresolved}</span>
-          <span className="stat-chip critical-chip">Critical: {stats.critical}</span>
-        </div>
-      </section>
+      <PageBanner
+        badge="Safety Monitoring"
+        badgeIcon={<FiAlertTriangle />}
+        title="Alert Command Center"
+        description="Monitor low-stock warnings and expiry notifications generated from live inventory conditions."
+        theme="rose"
+        actions={
+          <>
+            <button type="button" onClick={recomputeAlerts} disabled={loading}>
+              <FiRefreshCw />
+              {loading ? 'Refreshing...' : 'Refresh Alerts'}
+            </button>
+            <span className="stat-chip" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}>Total: {stats.total}</span>
+            <span className="stat-chip" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}>Unresolved: {stats.unresolved}</span>
+            <span className="stat-chip" style={{ background: 'rgba(255,80,100,0.3)', color: '#fda4af', borderColor: 'rgba(253,164,175,0.3)' }}>Critical: {stats.critical}</span>
+          </>
+        }
+      />
 
       <TableCard title="System Alerts" subtitle="Severity-based notifications from stock and expiry monitors.">
         {alerts.length === 0 ? (

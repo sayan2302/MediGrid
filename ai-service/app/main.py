@@ -45,6 +45,7 @@ async def call_groq(system_prompt: str, user_prompt: str) -> Optional[str]:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
+        "response_format": {"type": "json_object"}
     }
 
     headers = {
@@ -96,7 +97,8 @@ async def forecast_demand(request: ForecastRequest) -> dict:
                 "reasoning": "Groq key not configured. Using average usage heuristic.",
             }
 
-        parsed = json.loads(result)
+        cleaned_result = result.replace("```json", "").replace("```", "").strip()
+        parsed = json.loads(cleaned_result)
         parsed.setdefault("predictedDemand", heuristic)
         parsed.setdefault("confidence", "MEDIUM")
         parsed.setdefault("reasoning", "Computed via prompt-based inference")
@@ -137,7 +139,8 @@ async def expiry_risk(request: ExpiryRiskRequest) -> dict:
                 "riskLevel": heuristic_risk,
                 "reasoning": "Groq key not configured. Using deterministic expiry heuristic.",
             }
-        parsed = json.loads(result)
+        cleaned_result = result.replace("```json", "").replace("```", "").strip()
+        parsed = json.loads(cleaned_result)
         parsed.setdefault("riskLevel", heuristic_risk)
         parsed.setdefault("reasoning", "Computed via prompt-based inference")
         return parsed

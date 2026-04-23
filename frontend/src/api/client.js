@@ -32,8 +32,8 @@ const getSuccessMessage = (config, response) => {
     { method: 'post', pattern: '/purchase-orders/:id/approve', message: 'Purchase order approved.' },
     { method: 'post', pattern: '/purchase-orders/:id/reject', message: 'Purchase order rejected.' },
     { method: 'post', pattern: '/purchase-orders/:id/receive', message: 'Purchase order received. Inventory batches added.' },
-    { method: 'post', pattern: '/ai/forecast-demand', message: 'Demand forecast generated.' },
-    { method: 'post', pattern: '/ai/expiry-risk', message: 'Expiry risk analysis generated.' },
+    { method: 'post', pattern: '/ai/forecast-demand', message: null },
+    { method: 'post', pattern: '/ai/expiry-risk', message: null },
     { method: 'post', pattern: '/inventory/batches', message: 'Inventory batch added.' },
     { method: 'patch', pattern: '/inventory/batches/:id', message: 'Inventory batch updated.' },
     { method: 'delete', pattern: '/inventory/batches/:id', message: 'Inventory batch deleted.' }
@@ -129,7 +129,7 @@ api.interceptors.response.use(
     const method = response?.config?.method?.toLowerCase() || 'get';
     if (method !== 'get') {
       const message = getSuccessMessage(response?.config, response);
-      emitSuccess(message);
+      if (message) emitSuccess(message);
     }
 
     return response;

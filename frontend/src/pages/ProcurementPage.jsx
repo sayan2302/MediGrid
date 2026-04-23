@@ -5,6 +5,7 @@ import api from '../api/client';
 import { useAppData } from '../context/AppContext';
 import TableCard from '../components/TableCard';
 import EmptyState from '../components/EmptyState';
+import PageBanner from '../components/PageBanner';
 
 const emptyLine = {
   itemId: '',
@@ -81,7 +82,14 @@ export default function ProcurementPage() {
   };
 
   return (
-    <div className="page-grid two-col">
+    <div className="page-grid">
+      <PageBanner
+        badge="Procurement Workflow"
+        badgeIcon={<FiShoppingCart />}
+        title="Purchase Order Hub"
+        description="Create purchase orders, track approvals through the status machine, and receive stock into inventory."
+        theme="amber"
+      />
       <section className="form-card pin-card">
         <header className="section-head">
           <h3>Create Purchase Order</h3>
@@ -98,6 +106,7 @@ export default function ProcurementPage() {
           <Stack component="form" onSubmit={createPo} spacing={1.6}>
             <TextField
               label="PO Number"
+              placeholder="e.g., PO-2026-001"
               value={poForm.poNumber}
               onChange={(event) => setPoForm({ ...poForm, poNumber: event.target.value })}
             />
@@ -116,6 +125,7 @@ export default function ProcurementPage() {
             </TextField>
             <TextField
               label="Remarks"
+              placeholder="e.g., Monthly restock for Emergency Dept"
               value={poForm.remarks}
               onChange={(event) => setPoForm({ ...poForm, remarks: event.target.value })}
             />
@@ -152,6 +162,7 @@ export default function ProcurementPage() {
                 />
                 <TextField
                   label="Batch"
+                  placeholder="e.g., LOT-X9"
                   value={line.batchCode}
                   onChange={(event) => updateLine(index, { batchCode: event.target.value })}
                 />
